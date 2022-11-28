@@ -1,46 +1,76 @@
 import numpy as np
 import sympy as sp
 import json
-
-def myconverter(obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-
-
-
 class MetodoSimplex:
     
-    M = sp.symbols('M')
+    # M = sp.symbols('M')
     
     def __init__(self, matriz_aumentada):
         self.matriz_aumentada = matriz_aumentada
-        self.solucao_basica = self.retornar_solucao_basica()
-        self.variaveis_basicas = self.retornar_variaveis_basicas()
+        self.solucao_basica = []
+        self.variaveis_basicas = []
+        self.variaveis_nao_basicas = []
+        self.multiplas_solucoes = False
         self.coluna_pivo_index = -1
         self.linha_pivo_index = -1
         self.numero_pivo = 0
         self.iteracao = 0
+        self.solucao_otima = False
         self.iteracoes = {}
         self.M = sp.symbols('M')
 
     
-    def retornar_variaveis_basicas(self):
-        return np.array([2,3,5])
     
-    def retornar_solucao_basica(self):
-        return np.array([0,0,2.7,6,0,6])
+    def obter_valores_nulo_z(self, coef):
+        return 1 if (coef == 0) else 0
+
+    def obter_primeiras_variaveis_basicas(self):
+        solucao_basica = self.solucao_basica
+        variaveis_basicas = []
+        for i, item in enumerate(solucao_basica):
+            if(item != 0):
+                variaveis_basicas.append(i)
+
+        return np.array(variaveis_basicas)
+
+    def obter_primeira_solucao_basica(self):
+        z = self.obter_coeficientes_z()
+        lado_direito = list(self.obter_coluna_lado_direito())
+        # Onde os valores da solucao basica devem ficar
+        coeficientes_nulos = list(map(self.obter_valores_nulo_z, z))
+        solucao_basica = list(map(lambda x: lado_direito.pop(0) if x == 1 else 0, coeficientes_nulos))
+        return np.array(solucao_basica)
 
     def obter_variaveis_basicas_index(self):
         variaveis_basicas = self.variaveis_basicas
         coluna_pivo_index = self.coluna_pivo_index
         linha_pivo_index = self.linha_pivo_index
 
+        # Muda o indice da antiga variavel basica para o indice nova
         variaveis_basicas[linha_pivo_index-1] = coluna_pivo_index
         return variaveis_basicas
+
+    def obter_variaveis_nao_basicas_index(self):
+        array = np.arange(len(self.solucao_basica))
+        variaveis_nao_basicas = np.delete(array, list(self.variaveis_basicas))
+        return variaveis_nao_basicas
+
+    def obter_coef_z_vnb(self):
+        coefs_z = self.obter_coeficientes_z()
+        vnb = self.variaveis_nao_basicas
+        coefs_z_vnb = coefs_z[vnb]
+        return coefs_z_vnb
+
+    def problema_tem_solucoes_multiplas(self):
+        coefs_z_vnb = self.obter_coef_z_vnb()
+        for i, valor in enumerate(coefs_z_vnb):
+            coefs_z_vnb[i] = 1 if sp.sympify(valor) else valor
+        valor_minimo = min(coefs_z_vnb)
+        if (valor_minimo == 0):
+            self.multiplas_solucoes = True
+            return True
+
+        return False
 
     def razao_minima(self, coluna_pivo, coluna_lado_direito):
         coluna_pivo = coluna_pivo[1:]
@@ -63,12 +93,19 @@ class MetodoSimplex:
 
     def obter_coeficiente_mais_negativo_em_z(self, exp):
         expr = sp.sympify(exp)
-        return expr.coeff(self.M) if expr.coeff(self.M) != 0 else 0
+        # if (expr.coeff(self.M)):
+        #     return expr.coeff(self.M) if expr.coeff(self.M) != 0 else 0
+        
+        return expr.coeff(self.M) if expr.coeff(self.M) != 0 else exp           
 
     def obter_coluna_pivo_index(self):
-        matriz = self.matriz_aumentada
-        var_row = self.obter_coeficientes_z()
-        row_without_artifical = np.array(list(map(self.obter_coeficiente_mais_negativo_em_z, var_row)))
+        if(self.multiplas_solucoes):
+            coef_z_vnb = self.obter_coef_z_vnb()
+            min_index = np.argmin(coef_z_vnb)
+            return self.variaveis_nao_basicas[min_index] 
+
+        coef_func = self.obter_coeficientes_z()
+        row_without_artifical = np.array(list(map(self.obter_coeficiente_mais_negativo_em_z, coef_func)))
         max_value_index = np.argmin(row_without_artifical)
         coluna_pivo = max_value_index
         return coluna_pivo
@@ -88,13 +125,17 @@ class MetodoSimplex:
 
     def obter_coef_negativos_em_z(self, exp):
         expr = sp.sympify(exp)
-        return expr.coeff(self.M) if expr.coeff(self.M) != 0 else 0
+        if(expr.coeff(self.M)):
+            return expr.coeff(self.M) if expr.coeff(self.M) != 0 else 0
+
+        return expr if expr < 0 else 0
 
     def teste_otimalidade(self, row_function):
         coeficientes_artificiais = np.array(list(map(self.obter_coef_negativos_em_z, row_function)))
         coeficientes_artificiais = self.round_values(coeficientes_artificiais,2)
         negativeValues = (coeficientes_artificiais<0).sum()
         if(negativeValues == 0):
+            self.solucao_otima = True
             return 1
 
         return 0
@@ -168,14 +209,14 @@ class MetodoSimplex:
         basic_solution_index = 0
         nova_solucao_basica = np.zeros(solucao_basica.shape)
         for i, solucao in enumerate(solucao_basica):
-            #Adiciona variavel na base
+            # Adiciona novo valor na lista de solucao basica
             if(i == coluna_pivo_index):
                 nova_solucao_basica[i] = basic_solution[linha_pivo_index]
                 basic_solution_index += 1
-            # Retira variavel da base
+            # Retira valor antigo da lista
             elif(i == variaveis_basicas[linha_pivo_index]):
                 nova_solucao_basica[i] = 0
-            # Atualiza valor da variavel da base
+            # Atualiza valor da variavel da lista de solucao basica
             elif(solucao != 0):
                 nova_solucao_basica[i] = basic_solution[basic_solution_index]
                 basic_solution_index+=1
@@ -185,30 +226,51 @@ class MetodoSimplex:
     def matriz_para_dict(self, matriz):
         matriz_dict = {}
         for i, row in enumerate(matriz):
-            matriz_dict[i] =dict(enumerate(row.flatten(), 1))
+            row_dict = dict(enumerate(row.flatten(), 1))
+            # Parse symbolic values to string so json can show then
+            # Only the first row has symoblic values
+            if (i==0):
+                for i,coef in row_dict.items():
+                    row_dict[i] = str(coef).replace('*','')
+            matriz_dict[i] = row_dict
         
         return matriz_dict
 
+    def obter_valor_otimo(self):
+        if (self.solucao_otima):
+            return self.matriz_aumentada[0][-1]
+
+        return ''
+
     def atribuir_dados(self):
         matriz = self.round_all(self.matriz_aumentada)
+        self.solucao_basica = np.around(self.solucao_basica,2)
+        self.numero_pivo = np.around(self.numero_pivo,2)
+        linha_pivo = str(self.linha_pivo_index)
         dados = {
-            'linha_pivo' : self.linha_pivo_index,
+            'linha_pivo' : str(self.linha_pivo_index),
             'coluna_pivo' : self.coluna_pivo_index,
             'numero_pivo' : self.numero_pivo,
             'variaveis_basicas' : dict(enumerate(self.variaveis_basicas.flatten(), 1)),
             'solucao_basica' : dict(enumerate(self.solucao_basica.flatten(), 1)),
+            'solucao_otima': self.solucao_otima,
+            'multiplas_solucoes': self.multiplas_solucoes,
+            'valor_otimo': self.obter_valor_otimo(),
             'matriz' : self.matriz_para_dict(matriz)
         }
-        self.iteracoes[self.iteracao] = dados
+        self.iteracoes[str(self.iteracao)] = dados
 
-    def dict_to_json(self, dict):
-        jsonStr = json.dumps(dict, default=myconverter)
+    def dict_to_json(self, dict_object):
+        jsonStr = json.dumps(dict_object, default=myconverter)
         return jsonStr
 
     def simplex(self):
+        self.solucao_basica = self.obter_primeira_solucao_basica()
+        self.variaveis_basicas = self.obter_primeiras_variaveis_basicas()
+        self.variaveis_nao_basicas = self.obter_variaveis_nao_basicas_index()
         self.atribuir_dados()
         func_row = self.obter_coeficientes_z()
-        while(not self.teste_otimalidade(func_row)):
+        while(not self.teste_otimalidade(func_row) or self.problema_tem_solucoes_multiplas()):
             self.iteracao += 1
             self.coluna_pivo_index = self.obter_coluna_pivo_index()
             self.linha_pivo_index = self.obter_linha_pivo_index()
@@ -216,8 +278,21 @@ class MetodoSimplex:
             self.matriz_aumentada = self.obter_nova_matriz();
             self.solucao_basica = self.obter_nova_solucao_basica()
             self.variaveis_basicas = self.obter_variaveis_basicas_index()
+            self.variaveis_nao_basicas = self.obter_variaveis_nao_basicas_index()
             func_row = self.obter_coeficientes_z()
             self.atribuir_dados()
+
+            if(self.multiplas_solucoes):
+                break
             
 
         return self.iteracoes
+
+def myconverter(obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+
