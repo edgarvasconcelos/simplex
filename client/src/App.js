@@ -57,18 +57,18 @@ class AppComponent extends React.Component {
     const simplexResult = Object.values(this.state.resultado)
 
     if (simplexResult.length != 0) {
+      const variaveis = Object.values(simplexResult[0]['solucao_basica']) 
       return(
         <div className="App">
           <table class="table">
             <thead>
               <tr>          
                 <th>Variavel Basica</th>
-                <th>X<sub>1</sub></th>
-                <th>X<sub>2</sub></th>
-                <th>X<sub>2</sub></th>
-                <th>X<sub>4</sub></th>
-                <th>X<sub>5</sub></th>
-                <th>X<sub>6</sub></th>
+                {variaveis.map((dados, k) => {
+                  return(
+                    <th>X<sub>{k+1}</sub></th>
+                  );
+                })}
                 <th>Lado Direito</th>
               </tr>
             </thead>
@@ -76,6 +76,8 @@ class AppComponent extends React.Component {
             {simplexResult.map((dados, k) => {
             let linha_pivo = dados.linha_pivo
             let matriz = Object.values(dados.matriz)
+            // tira a funcao z da ultima posicao e coloca na primeira
+            matriz.unshift(matriz.pop())
             let variaveis_basicas = Object.values(dados.variaveis_basicas)
             variaveis_basicas.unshift('z')
               return (
@@ -84,7 +86,7 @@ class AppComponent extends React.Component {
                     let row = Object.values(linha)
                     return (
                       <tr>
-                        <th>X<sub>{variaveis_basicas[key]}</sub></th>
+                        <th>X<sub>{key == 0 ? variaveis_basicas[key] : variaveis_basicas[key]+1}</sub></th>
                       {row.map((value, index) => {
                         return (
                           <td>{value}</td>
@@ -103,8 +105,13 @@ class AppComponent extends React.Component {
     }
 
     if (this.state.changed) {
+      children.push(<TipoOtimizacao />);
       for (var v=1; v <= this.state.numVaraveis; v+= 1) {
         children.push(<ChildComponent key={'z'+v} chave={'z'+v} number={v} />);
+        if(v != this.state.numVaraveis) {
+          children.push(<p style={{display:'inline-flex'}}>+</p>)
+        }
+
       }
       children.push(<br></br>)
       children.push(<br></br>)
@@ -118,6 +125,7 @@ class AppComponent extends React.Component {
             break;
           } else {
             children.push(<ChildComponent key={i+''+j} chave={'x'+i+''+j} number={j} />);
+            children.push(<p style={{display:'inline-flex'}}>+</p>)
           }
         }
         children.push(<br></br>)
@@ -164,8 +172,17 @@ class AppComponent extends React.Component {
 
 export default AppComponent;
 
+const TipoOtimizacao = props => (
+  <div style={{display:'block'}}>
+  <label for="tipo">Selecione o tipo do problema</label>
+  <select name="tipo">
+    <option value="0">Minimizar</option>
+    <option value="1">Maximizar</option>
+  </select>
+  </div>
+);
 const ResultadoComponent = props =><label>{" = "}<input type="text" name={props.chave} /></label> 
-const ChildComponent = props =><label><input type="text" name={props.chave} />{"X"}<sub>{props.number}</sub>{" + "}</label> 
+const ChildComponent = props =><label><input type="text" name={props.chave} />{"X"}<sub>{props.number}</sub></label> 
 const CondicaoComponent = props => (
   <select name={props.chave}>
     <option value="-1">{'<='}</option>

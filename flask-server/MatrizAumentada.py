@@ -19,6 +19,7 @@ class MatrizAumentada:
     def obter_matriz_ajustada(self):
         dictObject = self.dict_object
         restricoes = int(dictObject['restricoes']) + 1 # +1 da funcao z
+        tipo_otimizacao = int(dictObject['tipo'])
         dados_ajustados = []
         for i in range(restricoes):
             if(i==0):
@@ -38,7 +39,7 @@ class MatrizAumentada:
 
         matriz_ajustada = np.array(dados_ajustados, dtype='object')
         self.matriz_ajustada = matriz_ajustada
-        return matriz_ajustada
+        return matriz_ajustada, tipo_otimizacao
 
     def if_minimize(self, matrix):
         for i in range(len(matrix[0])):
@@ -123,14 +124,12 @@ class MatrizAumentada:
     def criar_matriz_aumentada(self):
 
         M = sp.symbols('M')
-        matriz_ajustada = self.obter_matriz_ajustada()
-        funcao = 'maximizar'
-
-        if funcao == 'minimizar':
+        # 0 - Minimizar, 1 - Maximizar
+        matriz_ajustada, tipo_otimizacao = self.obter_matriz_ajustada()
+        if tipo_otimizacao == 0:
             matriz_ajustada = self.if_minimize(matriz_ajustada)
 
         variables = len(matriz_ajustada[0])
 
         matriz_aumentada, variables = self.add_variables(matriz_ajustada, variables, M)
         return matriz_aumentada
-
