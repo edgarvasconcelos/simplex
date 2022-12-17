@@ -126,7 +126,7 @@ class MatrizAumentada:
         M = sp.symbols('M')
         # 0 - Minimizar, 1 - Maximizar
         matriz_ajustada, tipo_otimizacao = self.obter_matriz_ajustada()
-        if tipo_otimizacao == 0:
+        if tipo_otimizacao == 1:
             matriz_ajustada = self.if_minimize(matriz_ajustada)
 
         variables = len(matriz_ajustada[0])

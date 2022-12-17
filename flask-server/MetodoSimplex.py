@@ -268,21 +268,26 @@ class MetodoSimplex:
         self.solucao_basica = self.obter_primeira_solucao_basica()
         self.variaveis_basicas = self.obter_primeiras_variaveis_basicas()
         self.variaveis_nao_basicas = self.obter_variaveis_nao_basicas_index()
-        self.atribuir_dados()
+        #self.atribuir_dados()
         func_row = self.obter_coeficientes_z()
         while(not self.teste_otimalidade(func_row) or self.problema_tem_solucoes_multiplas()):
             self.iteracao += 1
             self.coluna_pivo_index = self.obter_coluna_pivo_index()
             self.linha_pivo_index = self.obter_linha_pivo_index()
             self.numero_pivo = self.matriz_aumentada[self.linha_pivo_index][self.coluna_pivo_index]
+            self.atribuir_dados()
             self.matriz_aumentada = self.obter_nova_matriz();
             self.solucao_basica = self.obter_nova_solucao_basica()
             self.variaveis_basicas = self.obter_variaveis_basicas_index()
             self.variaveis_nao_basicas = self.obter_variaveis_nao_basicas_index()
             func_row = self.obter_coeficientes_z()
-            self.atribuir_dados()
 
             if(self.multiplas_solucoes):
+                self.iteracao += 1
+                self.coluna_pivo_index = 'Não há'
+                self.linha_pivo_index = 'Não há'
+                self.numero_pivo
+                self.atribuir_dados()
                 break
             
 
