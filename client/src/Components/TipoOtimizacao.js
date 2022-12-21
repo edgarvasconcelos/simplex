@@ -19,8 +19,8 @@ const TipoOtimizacao = props => {
   ease-in-out
   mr-5
   focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" aria-label="Default select example">
-                <option value="0">Minimizar</option>
-                <option value="1">Maximizar</option>
+                <option value="max">Maximizar</option>
+                <option value="min">Minimizar</option>
             </select>
         </div>
     )

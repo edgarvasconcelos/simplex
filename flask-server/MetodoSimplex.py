@@ -136,6 +136,12 @@ class MetodoSimplex:
         negativeValues = (coeficientes_artificiais<0).sum()
         if(negativeValues == 0):
             self.solucao_otima = True
+            if(not self.multiplas_solucoes):
+                self.iteracao += 1
+                self.coluna_pivo_index = 'Não há'
+                self.linha_pivo_index = 'Não há'
+                self.numero_pivo
+                self.atribuir_dados()
             return 1
 
         return 0
@@ -270,7 +276,11 @@ class MetodoSimplex:
         self.variaveis_nao_basicas = self.obter_variaveis_nao_basicas_index()
         #self.atribuir_dados()
         func_row = self.obter_coeficientes_z()
-        while(not self.teste_otimalidade(func_row) or self.problema_tem_solucoes_multiplas()):
+        while(1):
+
+            if (self.teste_otimalidade(func_row) and not self.multiplas_solucoes):
+                break
+
             self.iteracao += 1
             self.coluna_pivo_index = self.obter_coluna_pivo_index()
             self.linha_pivo_index = self.obter_linha_pivo_index()
@@ -289,8 +299,14 @@ class MetodoSimplex:
                 self.numero_pivo
                 self.atribuir_dados()
                 break
-            
 
+            if(self.solucao_otima):
+                self.iteracao += 1
+                self.coluna_pivo_index = 'Não há'
+                self.linha_pivo_index = 'Não há'
+                self.numero_pivo
+                self.atribuir_dados()
+            
         return self.iteracoes
 
 def myconverter(obj):
