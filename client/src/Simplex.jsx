@@ -6,6 +6,7 @@ import { Form } from "react-router-dom";
 import PaginaInicial from './Components/PaginaInicial';
 import Container from '@mui/material/Container';
 import Footer from './Components/Footer';
+import { Button } from '@mui/material';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -32,7 +33,7 @@ const Home = () => {
                             <form className="w-full max-w-lg" onSubmit={handleSubmit} action="/inserir-dados">
                                 <div className="flex flex-wrap align-itens:center -mx-3 mb-6">
                                     <label htmlFor="tipo" className=" tracking-wide text-gray-700 text-lg  mb-2 ">Selecione o método para resolução do problema: </label>
-                                    <select name="tipo" className="ml-2 form-select appearance-none px-3 py-0 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300
+                                    <select name="metodo" className="ml-2 form-select appearance-none px-3 py-0 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300
                         rounded transition ease-in-out mr-5 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" aria-label="Default select example">
                                         <option value="primal" selected>Simplex Primal</option>
                                         <option value="dual">Simplex Dual</option>
@@ -56,9 +57,9 @@ const Home = () => {
                                     </div>
                                 </div>
                                 <div >
-                                    <button className="inline-block align-center bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-md border-4 text-white py-1 px-2 rounded" type="submit">
-                                        Calcular
-                                    </button>
+
+                                <button className="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out">Calcular</button>
+                                 
                                 </div>
                             </form>
                         </div>
