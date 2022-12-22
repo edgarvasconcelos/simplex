@@ -1,6 +1,7 @@
 import {useSearchParams} from "react-router-dom";
 import React, { useEffect, useState} from 'react';
 import axios from 'axios';
+import Footer from "./Components/Footer";
 
 const ResultadoTabular = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -71,6 +72,7 @@ const ResultadoTabular = () => {
     const variaveis = Object.values(simplexResult[0]['solucao_basica']) 
     var iteracao = 0
     return (
+      
       <div className=" b py-20 px-4 sm:px-6 h-full w-screen justify-center items-center">
       <div className="overflow-x-auto relative">
             {simplexResult.map((dados, k) => {
@@ -127,12 +129,16 @@ const ResultadoTabular = () => {
                 <br></br>
                 <br></br>
                 <br></br>
+                
                 </>
+
               );
             })}
           
       </div>
+      <Footer></Footer>
       </div>
+      
     );
   }
 

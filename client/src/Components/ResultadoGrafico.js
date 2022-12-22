@@ -1,6 +1,4 @@
 
-
-
 import * as React from 'react';
 import ImgTeste from "../../src/assets/images/Carro.png";
 

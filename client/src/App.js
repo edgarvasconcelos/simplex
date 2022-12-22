@@ -5,11 +5,13 @@ import {BrowserRouter as Router,Routes,Route,Navigate} from "react-router-dom";
 import Home from "./Simplex";
 import Restricoes from "./Restricoes";
 import ResultadoTabular from "./ResultadoTabular";
+//import Footer from "./Components/Footer";
+import Header from "./Components/Header";
 
 function App() {
   return (
     <>
-      {/* This is the alias of BrowserRouter i.e. Router */}
+      <Header></Header>
       <Router>
         <Routes>
           <Route exact path="/" element={<Home/>} />
@@ -17,6 +19,7 @@ function App() {
           <Route path="/resultado-tabular" element={<ResultadoTabular/>} />
         </Routes>
       </Router>
+      
     </>
   );
 }
