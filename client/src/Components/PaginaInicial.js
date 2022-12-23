@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import header from '../Assets/Images/2.png'
+import header from '../Images/logo.png'
  
 const PaginaInicial = () => {
  
@@ -27,13 +27,7 @@ const PaginaInicial = () => {
          SimplexEasy
        </Typography> */}
        <img src={header}></img>
-       <Typography variant="h5" align="center" color="text.secondary" paragraph>
-         Problema de Otimização
-       </Typography>
- 
-       <Typography variant="h6" align="center" color="text.secondary" paragraph>
-         Escreva seu problema de programação linear abaixo
-       </Typography>
+
  
  
        {/* <Stack

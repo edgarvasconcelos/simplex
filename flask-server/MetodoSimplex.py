@@ -1,6 +1,8 @@
 import numpy as np
 import sympy as sp
 import json
+from fractions import Fraction
+from decimal import Decimal
 class MetodoSimplex:
     
     # M = sp.symbols('M')
@@ -164,6 +166,22 @@ class MetodoSimplex:
                 new_coeff_args += new_coeff
         
         return new_coeff_args
+    
+    def fracao_symbolic_coef_f(self, coeff):
+        args = coeff.args
+        new_coeff_args = Fraction(0)
+        if not args:
+            return coeff
+        for var in args:
+            symbols = var.free_symbols
+            if symbols:
+                new_coeff = self.obter_fracao(var.xreplace({self.M: 1}))
+                new_coeff_args += new_coeff*self.M
+            else:
+                new_coeff = self.obter_fracao(var)
+                new_coeff_args += new_coeff
+        
+        return new_coeff_args
 
     def round_symbolic_values_f(self, exp):
         expr = sp.sympify(exp)
@@ -172,6 +190,14 @@ class MetodoSimplex:
             return self.round_symbolic_coef_f(expr)
         else:
             return exp
+    
+    def fracao_symbolic_values_f(self, exp):
+        expr = sp.sympify(exp)
+        symbols = expr.free_symbols
+        if symbols:
+            return str(self.fracao_symbolic_coef_f(expr))
+        else:
+            return str(self.obter_fracao(exp))
 
     def round_all(self, matriz_iteracao):
         nova_matriz = np.zeros(matriz_iteracao.shape, dtype='O')
@@ -181,6 +207,77 @@ class MetodoSimplex:
                 nova_matriz[i] = list(map(self.round_symbolic_values_f,row))
             else:
                 nova_matriz[i] = self.round_values(row,2)
+
+        return nova_matriz
+
+    #Non-repeating decimals and decimals that cannot be expressed as a fraction
+    def obter_fracao(self, decimal_n):
+        negativo = False
+        if(decimal_n == 0):
+            decimal_n = Decimal(0)
+        elif (isinstance(decimal_n, float)):
+            decimal_n = Decimal(decimal_n)
+        else:
+            try:
+                if (decimal_n.is_Float):
+                    decimal_n = str(decimal_n)
+            except:
+                erro = 'true'
+
+            decimal_n = Decimal(decimal_n).normalize()
+
+        if(decimal_n < 0):
+            negativo = True
+            decimal_n = abs(decimal_n)
+
+
+        # Split the decimal into its integer and fractional parts
+        if (decimal_n == 0):
+            integer_part = int(decimal_n)
+        else:
+            integer_part = int(Decimal(decimal_n))
+
+        fractional_part = decimal_n - integer_part
+
+        decimal_para_string = str(fractional_part)
+        # Se tiver apenas duas casas decimais a outr logica noa funciona muito bem
+        # Aplicar esta logica para duas casas decimais
+        # Converter o decimal para srtring ele vai ter um tamanho 4 sempre, se tiver 2 casas decimais
+        if(len(decimal_para_string) <= 4):
+            if(negativo):
+                return Fraction.from_decimal(-decimal_n)
+            else:
+                return Fraction.from_decimal(decimal_n)
+
+        # Find the repeating part of the fractional part
+        repeating_part = Decimal(fractional_part % 1)
+
+        # Convert the repeating part to a fraction
+        repeating_fraction = Fraction.from_decimal(repeating_part)
+
+        # Add the integer and fractional parts together to get the final fraction
+        fraction = Fraction(integer_part) + repeating_fraction
+
+        # Reduce fraction to simplest form
+        reduced_fraction = fraction.limit_denominator()
+
+        if(negativo):
+            reduced_fraction = -reduced_fraction
+
+        return reduced_fraction
+
+
+    def obter_linha_com_fracoes(self, row):
+        return np.array([str(self.obter_fracao(number)) for number in row],dtype='O')
+    
+    def mudar_para_fracao(self, matriz_iteracao):
+        nova_matriz = np.zeros(matriz_iteracao.shape, dtype='O')
+
+        for i, row in enumerate(matriz_iteracao):
+            if(i == 0):
+                nova_matriz[i] = list(map(self.fracao_symbolic_values_f,row))
+            else:
+                nova_matriz[i] = self.obter_linha_com_fracoes(row)
 
         return nova_matriz
 
@@ -249,6 +346,7 @@ class MetodoSimplex:
         return ''
 
     def atribuir_dados(self):
+        matriz_forma_fracao = self.mudar_para_fracao(self.matriz_aumentada)
         matriz = self.round_all(self.matriz_aumentada)
         self.solucao_basica = np.around(self.solucao_basica,2)
         self.numero_pivo = np.around(self.numero_pivo,2)
@@ -262,7 +360,8 @@ class MetodoSimplex:
             'solucao_otima': self.solucao_otima,
             'multiplas_solucoes': self.multiplas_solucoes,
             'valor_otimo': self.obter_valor_otimo(),
-            'matriz' : self.matriz_para_dict(matriz)
+            'matriz' : self.matriz_para_dict(matriz),
+            'matriz_fracao' : matriz_forma_fracao
         }
         self.iteracoes[str(self.iteracao)] = dados
 

@@ -3,6 +3,7 @@ import MetodoSimplex
 import MetodoGrafico
 import json
 import numpy as np
+import Converter
 
 
 class AplicarSimplex:
@@ -15,6 +16,7 @@ class AplicarSimplex:
     def aplicar_simplex(self):
         print(self.dict_object)
         metodo = self.dict_object['metodo']
+        print(metodo)
         if(metodo == 'grafico'):
             data = self.aplicar_grafico()
         elif(metodo == 'primal'):
@@ -22,15 +24,12 @@ class AplicarSimplex:
         else:
             data = self.aplicar_simplex_dual()
 
+        print(data)
         return data
     def aplicar_simplex_primal(self):
         matriz_aumentada_class = MatrizAumentada.MatrizAumentada(self.dict_object)
         matriz_aumentada = matriz_aumentada_class.criar_matriz_aumentada()
-        # ma = np.array([[ 3,  5,  0,  0,  0,  0],
-        #         [ 1,  0,  1,  0,  0,  4],
-        #         [ 0,  2,  0,  1,  0, 12],
-        #         [ 3,  2,  0,  0,  1, 18]])
-        print(matriz_aumentada)
+
         metodo_simplex_class = MetodoSimplex.MetodoSimplex(matriz_aumentada)
         dict_object = metodo_simplex_class.simplex()
         json_data = metodo_simplex_class.dict_to_json(dict_object)
@@ -38,19 +37,18 @@ class AplicarSimplex:
         return json_data
 
     def aplicar_grafico(self):
-        matriz_ajustada, tipo_otimizacao = self.obter_matriz_ajustada()
+        matriz_aumentada_class = MatrizAumentada.MatrizAumentada(self.dict_object)
+        matriz_ajustada, tipo_otimizacao = matriz_aumentada_class.obter_matriz_ajustada()
         grafico = MetodoGrafico.MetodoGrafico(matriz_ajustada)
         grafico.criar_graficos()
         dados_grafico = {
-            'imagem': grafico.imagem,
-            'ponto_otimo': grafico.ponto_otimo
+            'ponto_otimo': grafico.ponto_otimo,
+            'valor_otimo': grafico.valor_otimo
         }
-        json_data = self.dict_to_json(dados_grafico)
+        print(dados_grafico)
+        json_data = Converter.dict_to_json(dados_grafico)
         return json_data
         
     def aplicar_simplex_dual(self):
         return
-    
-    def dict_to_json(self, dict_object):
-        jsonStr = json.dumps(dict_object, default=myconverter)
-        return jsonStr
+

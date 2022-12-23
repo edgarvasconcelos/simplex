@@ -17,16 +17,16 @@ import Stack from '@mui/material/Stack';
 const Restricoes = () => {
    const [searchParams] = useSearchParams();
    const tipo = searchParams.getAll('tipo')
-   const metodo = searchParams.getAll('metodo')
-   let rota 
-   if(metodo== "grafico"){
-    let rota = "resultado-graph"
+   const metodo = searchParams.getAll('metodo')[0]
+   let rota
+   if(metodo === "grafico"){
+    rota = "resultado-graph"
    }
-   else if (metodo == "dual"){
-    let rota = "resultado-dual"
+   else if (metodo === "dual"){
+    rota = "resultado-dual"
    }
    else{
-    let rota = "resultado-tabular"
+    rota = "resultado-tabular"
    }
 
    const variaveis = searchParams.getAll('variaveis')[0]
@@ -61,11 +61,11 @@ const Restricoes = () => {
            <Container sx={{ py: 8 }} maxWidth="lg">
  
                <div class="flex justify-center">
-                   <div class="flex flex-col md:flex-row md:max-w-x2 rounded-lg bg-white shadow-lg">
+                   <div class="flex flex-col md:flex-row md:max-w-x2 rounded-lg bg-white shadow-lg shadow-md">
                        <div class="p-6 flex flex-col justify-start">
                            <form onSubmit={handleSubmit} action={rota}>
                                <input type="hidden" name="metodo" value={metodo}></input>
-                               <input type="hidden" name="metodo" value={metodo}></input>
+                               <input type="hidden" name="tipo" value={tipo}></input>
                                <input type="hidden" name="restricoes" value={restricoes}></input>
                                <input type="hidden" name="variaveis" value={variaveis}></input>
                                {estrutura}

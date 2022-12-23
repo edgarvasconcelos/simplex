@@ -8,6 +8,7 @@ import ResultadoTabular from "./ResultadoTabular";
 import ResultadoGraph from "./ResultadoGraph";
 //import Footer from "./Components/Footer";
 import Header from "./Components/Header";
+import ResultadoGrafico from "./Components/ResultadoGrafico";
 
 function App() {
   return (
@@ -17,8 +18,8 @@ function App() {
         <Routes>
           <Route exact path="/" element={<Home/>} />
           <Route path="/inserir-dados" element={<Restricoes/>} />
-          {/* <Route path="/resultado-tabular" element={<ResultadoTabular/>} /> */}
-          <Route path="/resultado-graph" element={<ResultadoGraph/>} />
+          <Route path="/resultado-tabular" element={<ResultadoTabular/>} />
+          <Route path="/resultado-graph" element={<ResultadoGrafico/>} />
         </Routes>
       </Router>
       
